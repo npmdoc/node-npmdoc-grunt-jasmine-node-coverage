@@ -1,0 +1,260 @@
+<html><head></head><body><div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a href="https://github.com/jribble/grunt-jasmine-node-coverage">grunt-jasmine-node-coverage (v1.1.1)</a>
+</h1>
+<h4>Grunt task for running jasmine using istanbul for code coverage reports. Based off of grunt-jasmine-node by Omar Gonzalez (s9tpepper).</h4>
+<div class="apidocSectionDiv"><a href="#apidoc.tableOfContents" id="apidoc.tableOfContents"><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.grunt-jasmine-node-coverage">module grunt-jasmine-node-coverage</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.grunt-jasmine-node-coverage.grunt-jasmine-node-coverage">
+            function <span class="apidocSignatureSpan"></span>grunt-jasmine-node-coverage
+            <span class="apidocSignatureSpan">(grunt)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.grunt-jasmine-node-coverage.toString">
+            function <span class="apidocSignatureSpan">grunt-jasmine-node-coverage.</span>toString
+            <span class="apidocSignatureSpan">()</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.grunt-jasmine-node-coverage.toString">module grunt-jasmine-node-coverage.toString</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.grunt-jasmine-node-coverage.toString.toString">
+            function <span class="apidocSignatureSpan">grunt-jasmine-node-coverage.</span>toString
+            <span class="apidocSignatureSpan">()</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.grunt-jasmine-node-coverage" id="apidoc.module.grunt-jasmine-node-coverage">module grunt-jasmine-node-coverage</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.grunt-jasmine-node-coverage.grunt-jasmine-node-coverage" id="apidoc.element.grunt-jasmine-node-coverage.grunt-jasmine-node-coverage">
+        function <span class="apidocSignatureSpan"></span>grunt-jasmine-node-coverage
+        <span class="apidocSignatureSpan">(grunt)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function jasmineNodeTask(grunt) {
+
+  var reports = [];
+
+  var reportingDir,
+    coverageVar = '$$cov_' + new Date().getTime() + '$$',
+    fileSrc = ['**/*.js'],
+    options,
+    done;
+
+  var coverageCollect = function coverageCollect(covPattern, collector) {
+
+    // The pattern should be relative to the directory in which the reports are written
+    var coverageFiles = grunt.file.expand(path.resolve(reportingDir, covPattern));
+
+    coverageFiles.forEach(function eachFiles(coverageFile) {
+      var contents = fs.readFileSync(coverageFile, 'utf8');
+      var fileCov = JSON.parse(contents);
+      if (options.coverage.relativize) {
+        var cwd = process.cwd();
+        var newFileCov = {};
+        for (var key in fileCov) {
+          if (fileCov.hasOwnProperty(key)) {
+            var item = fileCov[key];
+            var filePath = item.path;
+            var relPath = path.relative(cwd, filePath);
+            item.path = relPath;
+            newFileCov[relPath] = item;
+          }
+        }
+        fileCov = newFileCov;
+      }
+      collector.add(fileCov);
+    });
+  };
+
+  var coverageThresholdCheck = function coverageThresholdCheck(collector) {
+
+    // http://gotwarlost.github.io/istanbul/public/apidocs/classes/ObjectUtils.html
+    var objUtils = istanbul.utils;
+
+    // Check against thresholds
+    collector.files().forEach(function eachFiles(file) {
+      var summary = objUtils.summarizeFileCoverage(
+        collector.fileCoverageFor(file)
+      );
+
+      Object.keys(options.coverage.thresholds).forEach(function eachKeys(metric) {
+        var threshold = options.coverage.thresholds[metric];
+        var actual = summary[metric];
+        if (!actual) {
+          grunt.fail.warn('unrecognized metric: ' + metric);
+        }
+        if (actual.pct &lt; threshold) {
+          grunt.fail.warn('expected ' + metric + ' coverage to be at least ' + threshold +
+          '% but was ' + actual.pct + '%' + '\n\tat (' + file + ')');
+        }
+      });
+    });
+  };
+
+  var includeAllSources = function includeAllSources(cov, opts) {
+    if (!opts || !opts.instrumenter || !opts.transformer || !opts.matchFn || !cov) {
+      grunt.log.error('includeAllSources was set but coverage wasn\'t run.');
+      return;
+    }
+
+    var instrumenter = opts.instrumenter,
+      transformer = opts.transformer,
+      matchFn = opts.matchFn;
+
+    // Source: https://github.com/gotwarlost/istanbul/blob/v0.4.0/lib/command/common/run-with-cover.js
+    // Starting at line 220
+
+    // Files that are not touched by code ran by the test runner is manually instrumented, to
+    // illustrate the missing coverage.
+    matchFn.files.forEach(function eachMatch(file) {
+      if (!cov[file]) {
+        transformer(fs.readFileSync(file, 'utf-8'), file);
+
+        // When instrumenting the code, istanbul will give each FunctionDeclaration a value of 1 in coverState.s,
+        // presumably to compensate for function hoisting. We need to reset this, as the function was not hoisted,
+        // as it was never loaded.
+        Object.keys(instrumenter.coverState.s).forEach(function eachKey(key) {
+          instrumenter.coverState.s[key] = 0;
+        });
+
+        cov[file] = instrumenter.coverState;
+      }
+    });
+  };
+
+  var collectReports = function collectReports(opts) {
+    var reportFile = path.resolve(reportingDir, options.coverage.reportFile),
+      // http://gotwarlost.github.io/istanbul/public/apidocs/classes/Collector.html
+      collector = new istanbul.Collector(),
+      cov = global[coverageVar];
+
+    if (options.coverage.includeAllSources) {
+      includeAllSources(cov, opts);
+    }
+
+    // important: there is no event loop at this point
+    // everything that happens in this exit handler MUST be synchronous
+    grunt.file.mkdir(reportingDir); // yes, do this again since some test runners could clean the dir initially created
+
+    grunt.verbose.writeln('Writing coverage object [' + reportFile + ']');
+
+    fs.writeFileSync(reportFile, JSON.stringify(cov, null, ' '), 'utf8');
+
+    if (options.coverage.collect !== false) {
+      options.coverage.collect.forEach(function eac ...</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.grunt-jasmine-node-coverage.toString" id="apidoc.element.grunt-jasmine-node-coverage.toString">
+        function <span class="apidocSignatureSpan">grunt-jasmine-node-coverage.</span>toString
+        <span class="apidocSignatureSpan">()</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">toString = function () {
+    return text;
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.grunt-jasmine-node-coverage.toString" id="apidoc.module.grunt-jasmine-node-coverage.toString">module grunt-jasmine-node-coverage.toString</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.grunt-jasmine-node-coverage.toString.toString" id="apidoc.element.grunt-jasmine-node-coverage.toString.toString">
+        function <span class="apidocSignatureSpan">grunt-jasmine-node-coverage.</span>toString
+        <span class="apidocSignatureSpan">()</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function toString() { [native code] }</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
+</body></html>
