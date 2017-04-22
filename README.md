@@ -1,4 +1,7 @@
-# api documentation for  [grunt-jasmine-node-coverage (v1.1.1)](https://github.com/jribble/grunt-jasmine-node-coverage)  [![npm package](https://img.shields.io/npm/v/npmdoc-grunt-jasmine-node-coverage.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-grunt-jasmine-node-coverage) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-grunt-jasmine-node-coverage.svg)](https://travis-ci.org/npmdoc/node-npmdoc-grunt-jasmine-node-coverage)
+# npmdoc-grunt-jasmine-node-coverage
+
+#### api documentation for  [grunt-jasmine-node-coverage (v1.1.1)](https://github.com/jribble/grunt-jasmine-node-coverage)  [![npm package](https://img.shields.io/npm/v/npmdoc-grunt-jasmine-node-coverage.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-grunt-jasmine-node-coverage) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-grunt-jasmine-node-coverage.svg)](https://travis-ci.org/npmdoc/node-npmdoc-grunt-jasmine-node-coverage)
+
 #### Grunt task for running jasmine using istanbul for code coverage reports. Based off of grunt-jasmine-node by Omar Gonzalez (s9tpepper).
 
 [![NPM](https://nodei.co/npm/grunt-jasmine-node-coverage.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/grunt-jasmine-node-coverage)
@@ -91,7 +94,8 @@
         "lint": "grunt eslint",
         "test": "grunt test"
     },
-    "version": "1.1.1"
+    "version": "1.1.1",
+    "bin": {}
 }
 ```
 
